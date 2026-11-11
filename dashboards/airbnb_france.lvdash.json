@@ -166,8 +166,9 @@
             "name": "t1",
             "multilineTextboxSpec": {
               "lines": [
-                "## Paris costs about twice as much as Lyon or Bordeaux, and 36–44% of listings in every city show no price",
-                "Median advertised nightly price, EUR. Listings without a price are inactive (closed calendar), so medians use priced listings only. Snapshots: Paris 2026-09-16, Lyon and Bordeaux 2026-09-17."
+                "## Paris costs about twice as much as Lyon or Bordeaux, and 36–44% of listings in every city show no price\n",
+                "\n",
+                "Median advertised nightly price, EUR. Listings without a price are inactive (closed calendar), so medians use priced listings only. Snapshots: Paris 2026-09-16, Lyon and Bordeaux 2026-09-17.\n"
               ]
             }
           },
@@ -241,7 +242,7 @@
               }
             ],
             "spec": {
-              "version": 1,
+              "version": 2,
               "widgetType": "table",
               "encodings": {
                 "columns": [
@@ -425,7 +426,7 @@
                 "title": "Room-type mix (% of listings)"
               },
               "mark": {
-                "layout": "group"
+                "layout": "stack"
               }
             }
           },
@@ -528,7 +529,7 @@
               }
             ],
             "spec": {
-              "version": 1,
+              "version": 2,
               "widgetType": "table",
               "encodings": {
                 "columns": [
@@ -579,8 +580,9 @@
             "name": "t2",
             "multilineTextboxSpec": {
               "lines": [
-                "## The same listing costs about twice as much in Paris as in Lyon, for every room type",
-                "Lyon is not a smaller Paris: the gap is a price level, not a different mix. That is why a model trained on both cities needs to know which city it is pricing."
+                "## The same listing costs about twice as much in Paris as in Lyon, for every room type\n",
+                "\n",
+                "Lyon is not a smaller Paris: the gap is a price level, not a different mix. That is why a model trained on both cities needs to know which city it is pricing.\n"
               ]
             }
           },
@@ -622,7 +624,7 @@
               }
             ],
             "spec": {
-              "version": 1,
+              "version": 2,
               "widgetType": "table",
               "encodings": {
                 "columns": [
@@ -805,8 +807,9 @@
             "name": "t3",
             "multilineTextboxSpec": {
               "lines": [
-                "## Once it knows the city's price level, v2 beats the baseline in every city. The week-1 model overpriced 97% of Bordeaux listings",
-                "MAE in EUR on held-out listings only: the Paris and Lyon test split, and Bordeaux (city C). v1 = week-1 model, scored on Bordeaux unchanged. v2 = week-2 model, where *calibrated* uses Bordeaux's median price from its training split and *uncalibrated* uses no Bordeaux prices at all. Baseline = median price of the same room type and guest count in Paris+Lyon training data."
+                "## Once it knows the city's price level, v2 beats the baseline in every city. The week-1 model overpriced 97% of Bordeaux listings\n",
+                "\n",
+                "MAE in EUR on held-out listings only: the Paris and Lyon test split, and Bordeaux (city C). v1 = week-1 model, scored on Bordeaux unchanged. v2 = week-2 model, where *calibrated* uses Bordeaux's median price from its training split and *uncalibrated* uses no Bordeaux prices at all. Baseline = median price of the same room type and guest count in Paris+Lyon training data.\n"
               ]
             }
           },
@@ -931,7 +934,7 @@
               }
             ],
             "spec": {
-              "version": 1,
+              "version": 2,
               "widgetType": "table",
               "encodings": {
                 "columns": [
@@ -1143,7 +1146,7 @@
               }
             ],
             "spec": {
-              "version": 1,
+              "version": 2,
               "widgetType": "table",
               "encodings": {
                 "columns": [
@@ -1225,7 +1228,7 @@
               }
             ],
             "spec": {
-              "version": 1,
+              "version": 2,
               "widgetType": "table",
               "encodings": {
                 "columns": [
@@ -1319,7 +1322,7 @@
               }
             ],
             "spec": {
-              "version": 1,
+              "version": 2,
               "widgetType": "table",
               "encodings": {
                 "columns": [

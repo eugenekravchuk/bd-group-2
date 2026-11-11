@@ -27,11 +27,14 @@ def frame(title, desc=None):
 
 
 def text(name, lines, x, y, w, h):
+    # each line needs its own newline, and a blank line separates the title from the subtitle
+    nl = chr(10)
+    lines = [lines[0] + nl, nl] + [l + nl for l in lines[1:]]
     return {"widget": {"name": name, "multilineTextboxSpec": {"lines": lines}},
             "position": {"x": x, "y": y, "width": w, "height": h}}
 
 
-def bar(name, ds, xcol, ycol, title, x, y, w, h, color=None, xlabel=None, ylabel=None, horizontal=False, desc=None):
+def bar(name, ds, xcol, ycol, title, x, y, w, h, color=None, xlabel=None, ylabel=None, horizontal=False, desc=None, stack=False):
     cols = [xcol, ycol] + ([color] if color else [])
     xe = {"fieldName": xcol, "scale": {"type": "categorical"}, "displayName": xlabel or xcol}
     ye = {"fieldName": ycol, "scale": {"type": "quantitative"}, "displayName": ylabel or ycol}
@@ -41,7 +44,7 @@ def bar(name, ds, xcol, ycol, title, x, y, w, h, color=None, xlabel=None, ylabel
     enc["label"] = {"show": True}
     spec = {"version": 3, "widgetType": "bar", "encodings": enc, "frame": frame(title, desc)}
     if color:
-        spec["mark"] = {"layout": "group"}
+        spec["mark"] = {"layout": "stack" if stack else "group"}
     return {"widget": {"name": name, "queries": fields(ds, cols), "spec": spec},
             "position": {"x": x, "y": y, "width": w, "height": h}}
 
@@ -67,7 +70,7 @@ def scatter(name, ds, xcol, ycol, color, title, x, y, w, h, desc=None):
 def table(name, ds, cols, title, x, y, w, h, desc=None):
     enc = {"columns": [{"fieldName": c, "displayName": label} for c, label in cols]}
     return {"widget": {"name": name, "queries": fields(ds, [c for c, _ in cols]),
-                       "spec": {"version": 1, "widgetType": "table", "encodings": enc, "frame": frame(title, desc)}},
+                       "spec": {"version": 2, "widgetType": "table", "encodings": enc, "frame": frame(title, desc)}},
             "position": {"x": x, "y": y, "width": w, "height": h}}
 
 
@@ -177,7 +180,7 @@ page("city_overview", "City overview", [
                                ("hosts", "Hosts"), ("superhost_pct", "% superhost"), ("entire_home_pct", "% entire home"),
                                ("neighbourhoods", "Neighbourhoods")], "Per-city summary", 0, 2, 6, 4),
     bar("median_price", city, "city_name", "median_price", "Median nightly price (EUR)", 0, 6, 2, 6, xlabel="City", ylabel="Median price (EUR)"),
-    bar("room_mix", room, "city_name", "share_pct", "Room-type mix (% of listings)", 2, 6, 2, 6, color="room_type", xlabel="City", ylabel="% of listings"),
+    bar("room_mix", room, "city_name", "share_pct", "Room-type mix (% of listings)", 2, 6, 2, 6, color="room_type", xlabel="City", ylabel="% of listings", stack=True),
     bar("availability", city, "city_name", "zero_availability_pct", "Listings with 0 open days in the next year (%)", 4, 6, 2, 6, xlabel="City", ylabel="%"),
     table("nbhd_table", nbhd, [("city_name", "City"), ("neighbourhood", "Neighbourhood"), ("listings", "Listings"),
                                ("median_price", "Median price"), ("avg_review_score", "Avg review")],
