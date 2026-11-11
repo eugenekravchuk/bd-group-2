@@ -55,9 +55,9 @@ COMMENT ON TABLE airbnb_lakehouse.gold.room_type_summary IS 'One row per city x 
 COMMENT ON TABLE airbnb_lakehouse.gold.listing_features IS 'One row per listing: cleaned attributes and the advertised nightly price in EUR (NULL when the listing showed no price). Use for listing-level questions such as the median price of a room type in a city.';
 COMMENT ON TABLE airbnb_lakehouse.gold.price_predictions IS 'Raw model output for every listing, all runs. Prefer v_test_predictions for accuracy questions.';
 COMMENT ON TABLE airbnb_lakehouse.gold.model_metrics IS 'Raw metric log, appended per run. Prefer v_model_metrics.';
-ALTER TABLE airbnb_lakehouse.gold.listing_features ALTER COLUMN price COMMENT 'Advertised price per night in EUR on the snapshot date; NULL = listing not bookable at scrape time';
+ALTER TABLE airbnb_lakehouse.gold.listing_features ALTER COLUMN price COMMENT 'Advertised price per night in EUR on the snapshot date. NULL = listing not bookable at scrape time';
 ALTER TABLE airbnb_lakehouse.gold.listing_features ALTER COLUMN room_type COMMENT 'One of: Entire home/apt, Private room, Hotel room, Shared room. "Entire home" means Entire home/apt.';
 ALTER TABLE airbnb_lakehouse.gold.listing_features ALTER COLUMN city COMMENT 'Lower-case city key: paris, lyon, bordeaux';
 ALTER TABLE airbnb_lakehouse.gold.listing_features ALTER COLUMN neighbourhood COMMENT 'Neighbourhood (arrondissement in Paris and Lyon, commune in Bordeaux metro)';
-ALTER TABLE airbnb_lakehouse.gold.listing_features ALTER COLUMN split COMMENT 'train or test (fixed 20% hash split); the model is evaluated on test only';
+ALTER TABLE airbnb_lakehouse.gold.listing_features ALTER COLUMN split COMMENT 'train or test (fixed 20% hash split). The model is evaluated on test only';
 ALTER TABLE airbnb_lakehouse.gold.city_summary ALTER COLUMN median_price COMMENT 'Median advertised nightly price in EUR over priced listings';
