@@ -95,13 +95,13 @@ ORDER BY model, variant
 
 ## 5. Expected answers (test before the demo)
 
-Computed from the same snapshots with the repository code. Small differences after the Databricks `france_v2` run are expected for model numbers (the forest is retrained there).
+Values from Databricks (`france_v2`). Genie returned all three correctly when tested on 2026-11-12.
 
 | Question | Expected answer |
 |---|---|
 | Median price of entire homes in City A | **EUR 226** (38,131 priced Paris entire homes). Lyon: EUR 120, Bordeaux: EUR 124 |
 | Neighbourhoods in City B with the most listings | 3e Arrondissement 1,599, 7e 1,380, 1er 1,356, 2e 1,180, 5e 890 |
-| Where the model under-prices most | Paris central arrondissements: Palais-Bourbon (about +EUR 174 on average, 279 test listings), Élysée (about +EUR 141), Luxembourg (about +EUR 102). The model has no neighbourhood feature, only distance to the city's centre point, so the most expensive central areas are pulled towards the city average |
+| Where the model under-prices most | Paris central arrondissements: Palais-Bourbon (+EUR 171 on average, 279 test listings, 70% of them under-priced), Élysée (+EUR 141), Luxembourg (+EUR 101). The model has no neighbourhood feature, only distance to the city's centre point, so the most expensive central areas are pulled towards the city average |
 
 ## 6. Tricks we used (for the presentation)
 
