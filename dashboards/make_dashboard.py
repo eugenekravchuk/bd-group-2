@@ -93,8 +93,8 @@ nbhd = dataset("top_neighbourhoods", f"""
 SELECT city_name, neighbourhood, listings, median_price, avg_review_score
 FROM {G}.neighbourhood_summary
 WHERE priced_listings >= 20
-QUALIFY ROW_NUMBER() OVER (PARTITION BY city ORDER BY median_price DESC) <= 8
-ORDER BY city_name, median_price DESC""")
+QUALIFY ROW_NUMBER() OVER (PARTITION BY city ORDER BY median_price DESC) <= 5
+ORDER BY CASE city WHEN 'paris' THEN 1 WHEN 'lyon' THEN 2 ELSE 3 END, median_price DESC""")
 compare = dataset("paris_vs_lyon", f"""
 WITH s AS (SELECT * FROM {G}.city_summary WHERE city IN ('paris', 'lyon')),
 long AS (
@@ -129,13 +129,17 @@ SELECT model, INITCAP(city) AS city, variant, labeled_listings, model_mae_eur, b
 FROM {G}.v_model_metrics
 ORDER BY model, city, variant""")
 mae_bar = dataset("mae_by_city_and_model", f"""
-SELECT INITCAP(city) AS city, CONCAT(model, ' - ', variant) AS model_variant, model_mae_eur AS mae_eur
+SELECT INITCAP(city) AS city,
+       CASE WHEN run_id = 'france_v1' THEN 'v1 (week 1)'
+            WHEN variant = 'uncalibrated' THEN 'v2 without city prices'
+            ELSE 'v2 (week 2)' END AS model_variant,
+       model_mae_eur AS mae_eur
 FROM {G}.v_model_metrics
 WHERE city <> 'combined'
 UNION ALL
-SELECT INITCAP(city), CONCAT('baseline - ', variant), baseline_mae_eur
+SELECT INITCAP(city), 'Baseline', baseline_mae_eur
 FROM {G}.v_model_metrics
-WHERE city <> 'combined' AND run_id = 'france_v2'
+WHERE city <> 'combined' AND run_id = 'france_v2' AND variant IN ('holdout', 'calibrated')
 ORDER BY city, model_variant""")
 scatter_ds = dataset("predicted_vs_actual_v2", f"""
 SELECT city_name, actual_price_eur, predicted_price_eur
@@ -148,7 +152,7 @@ SELECT model, city_name, room_type, COUNT(*) AS listings,
        ROUND(AVG(residual_eur), 2) AS mean_residual_eur
 FROM {G}.v_test_predictions
 GROUP BY ALL HAVING COUNT(*) >= 10
-ORDER BY model, city_name, listings DESC""")
+ORDER BY city_name, room_type, model""")
 err_room_v2 = dataset("error_by_room_type_v2", f"""
 SELECT CONCAT(city_name, ' - ', room_type) AS segment, ROUND(AVG(absolute_error_eur), 2) AS model_mae_eur
 FROM {G}.v_test_predictions
@@ -201,7 +205,7 @@ page("cross_city", "Cross-city comparison", [
 page("model", "Model", [
     text("t3", ["## Once it knows the city's price level, v2 beats the baseline in every city. The week-1 model overpriced 97% of Bordeaux listings",
                 "MAE in EUR on held-out listings only: the Paris and Lyon test split, and Bordeaux (city C). v1 = week-1 model, scored on Bordeaux unchanged. v2 = week-2 model, where *calibrated* uses Bordeaux's median price from its training split and *uncalibrated* uses no Bordeaux prices at all. Baseline = median price of the same room type and guest count in Paris+Lyon training data."], 0, 0, 6, 2),
-    bar("mae_bar", mae_bar, "city", "mae_eur", "MAE by city: baseline, v1, v2 (EUR, lower is better)", 0, 2, 3, 7, color="model_variant", xlabel="City", ylabel="MAE (EUR)"),
+    bar("mae_bar", mae_bar, "city", "mae_eur", "MAE by city: baseline, v1, v2 (EUR, lower is better). Bordeaux v1 = first run on all priced listings", 0, 2, 3, 7, color="model_variant", xlabel="City", ylabel="MAE (EUR)"),
     table("metrics_table", metrics, [("model", "Model"), ("city", "City"), ("variant", "Variant"), ("labeled_listings", "Listings"),
                                      ("model_mae_eur", "Model MAE"), ("baseline_mae_eur", "Baseline MAE"), ("improvement_eur", "Improvement")],
           "Test-set error, all runs", 3, 2, 3, 7),

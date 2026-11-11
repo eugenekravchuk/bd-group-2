@@ -27,8 +27,8 @@
         "SELECT city_name, neighbourhood, listings, median_price, avg_review_score\n",
         "FROM airbnb_lakehouse.gold.neighbourhood_summary\n",
         "WHERE priced_listings >= 20\n",
-        "QUALIFY ROW_NUMBER() OVER (PARTITION BY city ORDER BY median_price DESC) <= 8\n",
-        "ORDER BY city_name, median_price DESC\n"
+        "QUALIFY ROW_NUMBER() OVER (PARTITION BY city ORDER BY median_price DESC) <= 5\n",
+        "ORDER BY CASE city WHEN 'paris' THEN 1 WHEN 'lyon' THEN 2 ELSE 3 END, median_price DESC\n"
       ]
     },
     {
@@ -88,13 +88,17 @@
       "name": "mae_by_city_and_model",
       "displayName": "mae_by_city_and_model",
       "queryLines": [
-        "SELECT INITCAP(city) AS city, CONCAT(model, ' - ', variant) AS model_variant, model_mae_eur AS mae_eur\n",
+        "SELECT INITCAP(city) AS city,\n",
+        "       CASE WHEN run_id = 'france_v1' THEN 'v1 (week 1)'\n",
+        "            WHEN variant = 'uncalibrated' THEN 'v2 without city prices'\n",
+        "            ELSE 'v2 (week 2)' END AS model_variant,\n",
+        "       model_mae_eur AS mae_eur\n",
         "FROM airbnb_lakehouse.gold.v_model_metrics\n",
         "WHERE city <> 'combined'\n",
         "UNION ALL\n",
-        "SELECT INITCAP(city), CONCAT('baseline - ', variant), baseline_mae_eur\n",
+        "SELECT INITCAP(city), 'Baseline', baseline_mae_eur\n",
         "FROM airbnb_lakehouse.gold.v_model_metrics\n",
-        "WHERE city <> 'combined' AND run_id = 'france_v2'\n",
+        "WHERE city <> 'combined' AND run_id = 'france_v2' AND variant IN ('holdout', 'calibrated')\n",
         "ORDER BY city, model_variant\n"
       ]
     },
@@ -117,7 +121,7 @@
         "       ROUND(AVG(residual_eur), 2) AS mean_residual_eur\n",
         "FROM airbnb_lakehouse.gold.v_test_predictions\n",
         "GROUP BY ALL HAVING COUNT(*) >= 10\n",
-        "ORDER BY model, city_name, listings DESC\n"
+        "ORDER BY city_name, room_type, model\n"
       ]
     },
     {
@@ -877,7 +881,7 @@
               },
               "frame": {
                 "showTitle": true,
-                "title": "MAE by city: baseline, v1, v2 (EUR, lower is better)"
+                "title": "MAE by city: baseline, v1, v2 (EUR, lower is better). Bordeaux v1 = first run on all priced listings"
               },
               "mark": {
                 "layout": "group"
