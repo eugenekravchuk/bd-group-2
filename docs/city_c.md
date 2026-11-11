@@ -1,11 +1,10 @@
 # City C (Bordeaux): first run, fixes, report
 
-> **Where the numbers come from.** Week-1 (`france_v1`) numbers are from the Databricks run.
-> Week-2 (`france_v2`) numbers marked *(local)* were produced by running this repository's code
-> (the same `airbnb_etl.py` functions and `model/price_model.py`) on the same Inside Airbnb files with
-> local PySpark 3.5 and scikit-learn 1.6. The local rerun of week 1 matched the Databricks run exactly
-> on the split and the baseline, and within €1 on model MAE. **Rerun `france_v2` in Databricks
-> (steps in the README) and replace the *(local)* values with the published `gold.model_metrics` rows.**
+> **Where the numbers come from.** Every result in section 4 is from Databricks: runs `france_v1`
+> (week 1) and `france_v2` (week 2), table `gold.model_metrics`. Numbers marked *(local)* are diagnostics
+> we computed only once, by running this repository's code on the same Inside Airbnb files with local
+> PySpark 3.5 and scikit-learn 1.6. That local rerun matched Databricks exactly on the split and the
+> baseline, and within €1 on model MAE (for example, v2 Bordeaux calibrated: 47.98 local, 48.21 Databricks).
 
 ## 1. Week 1 frozen
 
@@ -77,17 +76,17 @@ How the changes were chosen: on a 20% validation slice of the A/B **training** r
 | Metric (EUR) | Value |
 |---|---:|
 | Baseline on Bordeaux: A/B training median for room type × accommodates, all 7,722 priced listings | 118.51 |
-| Baseline on Bordeaux, test split (1,583) | 114.78 *(local)* |
-| Model MAE on Paris test: v1 / v2 | 142.55 / 110.35 *(local)* |
-| Model MAE on Lyon test: v1 / v2 | 157.94 / 38.78 *(local)* |
-| Model MAE on Paris + Lyon test: v1 / v2 (baseline 151.32) | 144.13 / 103.02 *(local)* |
+| Baseline on Bordeaux, test split (1,583) | 114.78 |
+| Model MAE on Paris test: v1 / v2 | 142.55 / 109.89 |
+| Model MAE on Lyon test: v1 / v2 | 157.94 / 38.45 |
+| Model MAE on Paris + Lyon test: v1 / v2 (baseline 151.32) | 144.13 / 102.57 |
 | **Model MAE on Bordeaux, first run (v1, all priced listings)** | **223.16** |
-| v1 on the Bordeaux test split, for a like-for-like comparison | 230.81 *(local)* |
-| v2 on Bordeaux test, **without** any Bordeaux prices (pooled A/B level €203) | 132.79 *(local)* |
-| **v2 on Bordeaux test, calibrated with Bordeaux's level (€107)** | **47.98** *(local)* |
+| v1 on the Bordeaux test split, for a like-for-like comparison (SQL join of both runs' predictions) | 234.00 |
+| v2 on Bordeaux test, **without** any Bordeaux prices (pooled A/B level €203) | 133.12 |
+| **v2 on Bordeaux test, calibrated with Bordeaux's level (€107)** | **48.21** |
 | For reference: a baseline built from Bordeaux's own training split | 51.89 *(local)* |
 
-How much each change closed on the Bordeaux test split (cumulative, post-diagnosis, local):
+How much each change closed on the Bordeaux test split (cumulative, post-diagnosis, *local* ablation: each step is a separately trained model, so the last row differs slightly from the Databricks v2):
 
 | Step | A/B test MAE | Bordeaux MAE |
 |---|---:|---:|
@@ -101,8 +100,8 @@ How much each change closed on the Bordeaux test split (cumulative, post-diagnos
 * **The first-run error was a price-level error, not noise.** The week-1 model overpriced 97% of Bordeaux listings, by €207 on average *(local rerun of `france_v1`)*. Two effects add up. Paris prices dominate the training data. Bordeaux has bigger, house-type listings, which in Paris only exist at the luxury end. A Bordeaux house with 3 bedrooms looks like a Paris house with 3 bedrooms, and those cost €450+.
 * **Log price removed about a third of it (€225 → €144).** The raw-price forest was pulled up by Paris listings priced at €10k–€100k.
 * **The price level removed most of the rest (€144 → €50).** Without any Bordeaux prices, v2 is still worse than the naive baseline (€133 vs €115). **Our model cannot price a new city from Paris and Lyon alone.** What transfers is the *relative* structure (rooms, capacity, location within the city, reviews). The level has to come from the new city.
-* **After calibration, Bordeaux is not worse than the training cities.** In EUR its MAE (€48) is lower than A/B (€103), but only because Bordeaux is cheaper. Relative to the city median, the error is 0.45 in Bordeaux, against 0.51 in Paris and 0.35 in Lyon.
-* **What the model adds over a local rule is small.** A room-type × capacity median computed on Bordeaux's own listings scores €51.89; v2 scores €47.98. Most of the improvement comes from knowing the market level, not from the forest. That is the honest product message: for a new client city we need a calibration sample, or the first prices will be roughly 2× too high.
+* **After calibration, Bordeaux is not worse than the training cities.** In EUR its MAE (€48) is lower than A/B (€103), but only because Bordeaux is cheaper. Relative to the city median, the error is 0.45 in Bordeaux, against 0.50 in Paris and 0.35 in Lyon.
+* **What the model adds over a local rule is small.** A room-type × capacity median computed on Bordeaux's own listings scores €51.89; v2 scores €48.21. Most of the improvement comes from knowing the market level, not from the forest. That is the honest product message: for a new client city we need a calibration sample, or the first prices will be roughly 2× too high.
 * **Remaining risks.** Bordeaux is a metropolitan area (62 communes, p90 distance 8.5 km against 4.7 km in Paris), so `dist_to_center_km` extends beyond anything the model saw. 34 listings have property types never seen in training. The test split has only 3 hotel rooms and 2 shared rooms, too few to say anything about those room types.
 
 ## Where to look first, for any new city

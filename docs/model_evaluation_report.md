@@ -87,16 +87,16 @@ None is derived from price; see the leakage review in the EDA notebook. The fore
 
 A new city needs a price level. v2 takes it from that city's ETL `train` split, the calibration sample, and is evaluated on its `test` split. It also reports the uncalibrated score, which uses the pooled A/B level.
 
-| Evaluation (*local* rerun; replace with Databricks `france_v2`) | Labeled n | Model MAE EUR | Baseline MAE EUR |
+| Evaluation (Databricks, run `france_v2`) | Labeled n | Model MAE EUR | Baseline MAE EUR |
 |---|---:|---:|---:|
-| Paris test | 8,734 | 110.35 | 156.65 |
-| Lyon test | 997 | 38.78 | 104.61 |
-| A/B combined test | 9,731 | 103.02 | 151.32 |
-| Bordeaux test, calibrated (post-diagnosis) | 1,583 | 47.98 | 114.78 |
-| Bordeaux test, uncalibrated (post-diagnosis) | 1,583 | 132.79 | 114.78 |
-| Bordeaux test, `france_v1` on the same rows | 1,583 | 230.81 | 114.78 |
+| Paris test | 8,734 | 109.89 | 156.65 |
+| Lyon test | 997 | 38.45 | 104.61 |
+| A/B combined test | 9,731 | 102.57 | 151.32 |
+| Bordeaux test, calibrated (post-diagnosis) | 1,583 | 48.21 | 114.78 |
+| Bordeaux test, uncalibrated (post-diagnosis) | 1,583 | 133.12 | 114.78 |
+| Bordeaux test, `france_v1` on the same rows (SQL join of both runs' predictions) | 1,583 | 234.00 | 114.78 |
 
-v2 beats the baseline in both training cities, including Lyon, which v1 lost by €53. Paris remains the hardest city: its MAE is still above €100, and v2 underprices Paris on average (mean residual +€34), because a log model predicts close to the typical price and Paris has a long expensive tail. Without a Bordeaux price level the model still loses to the baseline. That limitation is explained in [city_c.md](city_c.md#explaining-the-gap).
+v2 beats the baseline in both training cities, including Lyon, which v1 lost by €53. Paris remains the hardest city: its MAE is still above €100, and v2 underprices Paris on average (mean residual about +€34 in our local rerun), because a log model predicts close to the typical price and Paris has a long expensive tail. Without a Bordeaux price level the model still loses to the baseline. That limitation is explained in [city_c.md](city_c.md#explaining-the-gap).
 
 ## Gold outputs and dashboard integration
 

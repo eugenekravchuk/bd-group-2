@@ -53,14 +53,14 @@ Full report: [docs/city_c.md](docs/city_c.md). It covers the first run, the chan
 
 | MAE (EUR), held-out listings | Baseline | v1 (`france_v1`, week 1) | v2 (`france_v2`, week 2) |
 |---|---:|---:|---:|
-| Paris test (8,734) | 156.65 | 142.55 | 110.35* |
-| Lyon test (997) | 104.61 | 157.94 | 38.78* |
-| Paris + Lyon test (9,731) | 151.32 | 144.13 | 103.02* |
+| Paris test (8,734) | 156.65 | 142.55 | 109.89 |
+| Lyon test (997) | 104.61 | 157.94 | 38.45 |
+| Paris + Lyon test (9,731) | 151.32 | 144.13 | 102.57 |
 | Bordeaux, first run, all 7,722 priced listings | 118.51 | **223.16** | – |
-| Bordeaux test split (1,583), no Bordeaux prices used | 114.78* | 230.81* | 132.79* |
-| Bordeaux test split (1,583), calibrated with Bordeaux's median price | 114.78* | 230.81* | **47.98*** |
+| Bordeaux test split (1,583), no Bordeaux prices used | 114.78 | 234.00* | 133.12 |
+| Bordeaux test split (1,583), calibrated with Bordeaux's median price | 114.78 | 234.00* | **48.21** |
 
-\* Local rerun of this repository's code on the same files. The local rerun of week 1 matched Databricks exactly on the split and the baseline, and within €1 on model MAE. Replace these values with `gold.v_model_metrics` after running `france_v2` in Databricks (steps below).
+All numbers are from Databricks (`gold.model_metrics`). \* The `france_v1` model scored on the same 1,583 Bordeaux test listings as v2, computed with a SQL join of the two runs' rows in `gold.price_predictions`.
 
 * **The ETL ran on Bordeaux without an error, but it was not correct.** Two model features (`host_years`, `instant_bookable`) had been 100% NULL in every city since week 1, because Inside Airbnb moved `host_since` to `hosts_time_as_host_years`. The quality report did not catch it.
 * **The week-1 run completed with full coverage:** all 12,063 Bordeaux listings got a non-null prediction, confirmed by a Gold query. Coverage was not the problem; accuracy was.
@@ -76,7 +76,7 @@ Model code: `model/price_model.py`; notebook: `notebooks/02_price_prediction.py`
 1. Rerun the ETL with the fixed pipeline for all three cities: `airbnb_etl_all_cities` with `cities=["paris","lyon","bordeaux"]` and `pipeline_version=week2-fix1`. Check `pipeline/04_run_report`: `empty_columns` should list `host_since` and `instant_bookable`, and `host_years` should be about 0% NULL.
 2. Run the model notebook (or the `price_model` job) with `mode=train_ab`, `run_id=france_v2`.
 3. Run it again with `mode=evaluate_c`, `run_id=france_v2`, `c_city=bordeaux`, `reference_run_id=france_v1`. This writes the calibrated, uncalibrated and v1-on-the-same-rows metrics to `gold.model_metrics`. The notebook asserts that every Bordeaux listing gets a prediction, then refreshes the views in `model/gold_views.sql`.
-4. Replace the starred numbers in this README, in `docs/city_c.md` and on the presentation's results slide with `SELECT * FROM airbnb_lakehouse.gold.v_model_metrics`.
+4. Read the results with `SELECT * FROM airbnb_lakehouse.gold.v_model_metrics`. (Done for this submission: the README, `docs/city_c.md` and the slides show the Databricks values.)
 
 Never rerun `france_v1`: its first-run Bordeaux result is the evidence. The notebook refuses to overwrite it.
 
